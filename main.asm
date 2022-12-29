@@ -70,6 +70,8 @@ int 21h
 ret
 
 scan_point:
+;scan_point(di)
+;di=point(di[0],di[1])
 
 call printn
 
@@ -114,6 +116,7 @@ ret
            
 
 calcSqrt:
+;ret=calcSqrt(ax)
     xor cx,cx
     mov cl,64h 
     mov di,cx ;precisionFactor 
@@ -238,6 +241,7 @@ call calcSqrt ;ax=sqrt(ax);
 ret 
 
 main:
+
 ;[bp-4] point1 : [bp-4][0]=x1,[bp-4][1]=y1 
 ;[bp-8] point2 : [bp-8][0]=x2,[bp-8][1]=y2
 ;[bp-12] point3 : [bp-12][0]=x3,[bp-12][1]=y3
@@ -247,8 +251,53 @@ main:
 ;[bp-28] length3
 ;[bp-32] length4
 
+;scan point 1
+
+lea di,[bp-4]
+call scan_point
+
+;scan point 2
+
+lea di,[bp-8]
+call scan_point
+
+;scan point 3
+lea di,[bp-12]
+call scan_point
+
+;scan point 4
+lea di,[bp-16]
+call scan_point
 
 
+;calc and store distance for point1,point2
+
+lea di,[bp-4]
+lea si,[bp-8]
+call distance_calc
+mov [bp-20],ax    ;store result in length1
+
+;calc and store distance for point2,point3
+
+lea di,[bp-8]
+lea si,[bp-12]
+call distance_calc
+mov [bp-24],ax    ;store result in length2
+
+;calc and store distance for point3,point4
+
+lea di,[bp-12]
+lea si,[bp-16]
+call distance_calc
+mov [bp-28],ax    ;store result in length3
+
+
+;calc and store distance for point4,point1
+
+lea di,[bp-16]
+lea si,[bp-4]
+call distance_calc
+mov [bp-32],ax    ;store result in length4
 
 
 
