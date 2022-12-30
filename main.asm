@@ -23,6 +23,16 @@ mov ah,09h
 int 21h 
 ret
 
+abs:	; abs(ax)=ret |ax|
+cmp ax, 0
+jl negative
+jmp positive
+negative:
+neg ax
+positive:
+; value is already positive, so do nothing
+ret
+
 
 exit:
 xor ax,ax
@@ -231,11 +241,15 @@ mov bl,[di][1]
 mov cl,[si][0]
 mov dl,[si][1]
 sub ax,cx  ;d1=(x2-x1)
+call abs
+mov si,dx
 mul ax     ;d1^2
+mov dx,si
 mov di,ax ;di=ax=d1^2
 sub bx,dx  ;d2=(y2-y1)
 mov ax,bx
-mul bx     ;d2^2
+call abs
+mul ax     ;d2^2
 add ax,di   ;ax=d1^2 + d2^2
 call calcSqrt ;ax=sqrt(ax);
 ret 
