@@ -88,7 +88,10 @@ call printn
 ;push ascii "enter x:  "
 
 push 2424h
-push 2020h
+mov ah,20h
+add al,30h
+push ax
+;push 2020h
 push 3a78h
 push 2072h
 push 6574h
@@ -258,13 +261,15 @@ detect_shape:
 cmp ax,6
 je square
 cmp ax,2
-jne unknown
+je rectangle
 
+jmp unknown
 
 rectangle:
 call printn
 call printn
 call printn
+;"[+] rectangle Founded"
 push 2424h
 push 2464h
 push 6564h
@@ -280,12 +285,13 @@ push 2b5bh
 mov dx,sp
 call print
 add sp,24
-ret 
+jmp finish_detecting 
 
 square:
 call printn
 call printn
 call printn
+;"[+] Square Founded"
 push 2424h
 push 6465h
 push 646eh
@@ -299,13 +305,13 @@ push 2b5bh
 mov dx,sp
 call print
 add sp,20
-ret
-
+jmp finish_detecting 
 
 unknown:
 call printn
 call printn
 call printn
+;"[+] Unknown Founded"
 push 2464h
 push 6564h
 push 6e75h
@@ -319,8 +325,10 @@ push 2b5bh
 mov dx,sp
 call print
 add sp,20
-ret
+jmp finish_detecting 
 
+finish_detecting:
+ret
 
 
 compare_4lengths:
@@ -348,19 +356,99 @@ jne len2_len4
 inc di
 len2_len4:
 cmp bx,dx
-jne finish_detecting
+jne finish_compareing_lengths
 inc di
-finish_detecting:
+finish_compareing_lengths:
 mov ax,di
-call detect_shape
+ret
+
+startup_message:
+call printn
+call printn
+;"[+] Shape Detector Program , it take a 4 points(x,y)  to determine if it a square or triangle or rectangle or unknown shape then diagram it"
+push 2474h
+push 6920h
+push 6d61h
+push 7267h
+push 6169h
+push 6420h
+push 6e65h
+push 6874h
+push 2065h
+push 7061h
+push 6873h
+push 206eh
+push 776fh
+push 6e6bh
+push 6e75h
+push 2072h
+push 6f20h
+push 656ch
+push 676eh
+push 6174h
+push 6365h
+push 7220h
+push 726fh
+push 2065h
+push 6c67h
+push 6e61h
+push 6972h
+push 7420h
+push 726fh
+push 2065h
+push 7261h
+push 7571h
+push 7320h
+push 6120h
+push 7469h
+push 2066h
+push 6920h
+push 656eh
+push 696dh
+push 7265h
+push 7465h
+push 6420h
+push 6f74h
+push 2020h
+push 2979h
+push 2c78h
+push 2873h
+push 746eh
+push 696fh
+push 7020h
+push 3420h
+push 6120h
+push 656bh
+push 6174h
+push 2074h
+push 6920h
+push 2c20h
+push 6d61h
+push 7267h
+push 6f72h
+push 5020h
+push 726fh
+push 7463h
+push 6574h
+push 6544h
+push 2065h
+push 7061h
+push 6853h
+push 205dh
+push 2b5bh
+mov dx,sp
+call print
+add sp,8ch
+call printn
+call printn
+call printn
 ret
 
 
 
 
-
-
 main:
+call startup_message
 
 ;[bp-4] point1 : [bp-4][0]=x1,[bp-4][1]=y1 
 ;[bp-8] point2 : [bp-8][0]=x2,[bp-8][1]=y2
@@ -372,7 +460,7 @@ main:
 ;[bp-32] length4
 
 ;scan point 1
-
+mov al,01h;
 lea di,[bp-4]
 call scan_point
 
