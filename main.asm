@@ -88,10 +88,7 @@ call printn
 ;push ascii "enter x:  "
 
 push 2424h
-mov ah,20h
-add al,30h
-push ax
-;push 2020h
+push 2020h
 push 3a78h
 push 2072h
 push 6574h
@@ -258,11 +255,12 @@ call calcSqrt ;ax=sqrt(ax);
 ret 
 
 detect_shape:
-cmp ax,6
+cmp ax,06h
 je square
-cmp ax,2
+cmp ax,02h
 je rectangle
-
+cmp bx,08h
+je triangle
 jmp unknown
 
 rectangle:
@@ -307,6 +305,27 @@ call print
 add sp,20
 jmp finish_detecting 
 
+triangle:
+call printn
+call printn
+call printn
+;"[+] Triangle Founded"
+push 2424h
+push 6465h
+push 646eh
+push 756fh
+push 4620h
+push 656ch
+push 676eh
+push 6169h
+push 7254h
+push 205dh
+push 2b5bh
+mov dx,sp
+call print
+add sp,22
+jmp finish_detecting 
+
 unknown:
 call printn
 call printn
@@ -330,6 +349,63 @@ jmp finish_detecting
 finish_detecting:
 ret
 
+detect_triangle:
+;a = x1 * (y2 - y3)+ x2 * (y3 - y1)+ x3 * (y1 - y2);
+push bp
+mov bp,sp
+mov bx,ptr word[bp+4] ;1
+mov ax,ptr word[bp+6] ;2
+mov cx,ptr word[bp+8] ;3
+;xh =y , xl=x
+mov di,ptr word[bp+10] ;tmp space
+xor dl,dl
+mov al,ah
+mov ah,dl  
+mov cl,ch
+mov ch,dl
+sub al,cl
+mov bh,dl
+mul bx
+mov [bp+10],ax
+mov cx,ptr word[bp+4] ;1
+mov bx,ptr word[bp+6] ;2
+mov ax,ptr word[bp+8] ;3
+mov di,ptr word[bp+10] ;tmp space
+xor dl,dl
+mov al,ah
+mov ah,dl  
+mov cl,ch
+mov ch,dl
+sub al,cl
+mov bh,dl
+mul bx
+add ax,di
+mov [bp+10],ax
+mov ax,ptr word[bp+4] ;1
+mov cx,ptr word[bp+6] ;2
+mov bx,ptr word[bp+8] ;3
+mov di,ptr word[bp+10] ;tmp space
+xor dl,dl
+mov al,ah
+mov ah,dl  
+mov cl,ch
+mov ch,dl
+sub al,cl
+mov bh,dl
+mul bx
+add ax,di
+xor dx,dx
+check_if_ax_is_zero:
+cmp ax,dx
+je not_triangle
+add dl,08h
+mov ptr word[bp+10],dx
+jmp finish_detect_triangle
+not_triangle:
+mov word[bp+10],dx
+finish_detect_triangle:
+pop bp
+ret 
 
 compare_4lengths:
 ;ax=length1 ,bx=length2 ,cx=length3 ,dx=length4   , ret=ax ( square : ax=6 , ax=2 rectangle )
@@ -458,7 +534,7 @@ call startup_message
 ;[bp-24] length2
 ;[bp-28] length3
 ;[bp-32] length4
-
+;[bp-36] 2* area of triangle  = x1 * (y2 - y3)+ x2 * (y3 - y1)+ x3 * (y1 - y2);
 ;scan point 1
 mov al,01h;
 lea di,[bp-4]
@@ -507,7 +583,24 @@ lea si,[bp-4]
 call distance_calc
 mov [bp-32],ax    ;store result in length4
 
+xor ax,ax
+push ax
+mov al,ptr byte[bp-12][0]
+mov ah ,ptr byte[bp-12][1]
+push ax
+mov al,ptr byte[bp-8][0]
+mov ah ,ptr byte[bp-8][1]
+push ax
+mov al,ptr byte[bp-4][0]
+mov ah ,ptr byte[bp-4][1]
+push ax
 
+call detect_triangle
+pop ax
+pop ax
+pop ax
+pop ax
+mov ptr word[bp-36],ax
 
 ; compare lengths to detect_shape
 mov ax,[bp-20]
@@ -517,7 +610,10 @@ mov dx,[bp-32]
 call compare_4lengths
 
 ;shape detect useing compare result
-call detect_shape
+
+mov bx,[bp-36]
+call detect_shape 
+
 
 call exit
 
