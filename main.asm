@@ -240,6 +240,112 @@ add ax,di   ;ax=d1^2 + d2^2
 call calcSqrt ;ax=sqrt(ax);
 ret 
 
+detect_shape:
+cmp ax,6
+je square
+cmp ax,2
+jne unknown
+
+
+rectangle:
+call printn
+call printn
+call printn
+push 2424h
+push 2464h
+push 6564h
+push 6e75h
+push 6f46h
+push 2065h
+push 6c67h
+push 6e61h
+push 7463h
+push 6552h
+push 205dh
+push 2b5bh
+mov dx,sp
+call print
+add sp,24
+ret 
+
+square:
+call printn
+call printn
+call printn
+push 2424h
+push 6465h
+push 646eh
+push 756fh
+push 4620h
+push 6572h
+push 6175h
+push 7153h
+push 205dh
+push 2b5bh
+mov dx,sp
+call print
+add sp,20
+ret
+
+
+unknown:
+call printn
+call printn
+call printn
+push 2464h
+push 6564h
+push 6e75h
+push 6f46h
+push 206eh
+push 776fh
+push 6e6bh
+push 6e55h
+push 205dh
+push 2b5bh
+mov dx,sp
+call print
+add sp,20
+ret
+
+
+
+compare_4lengths:
+;ax=length1 ,bx=length2 ,cx=length3 ,dx=length4   , ret=ax ( square : ax=6 , ax=2 rectangle )
+len1_len2:
+xor di,di
+cmp ax,bx
+jne len2_len3
+inc di
+len2_len3:
+cmp bx,cx
+jne len3_len4
+inc di
+len3_len4:
+cmp cx,dx
+jne len4_len1
+inc di
+len4_len1:
+cmp dx,ax
+jne len1_len3
+inc di
+len1_len3:
+cmp ax,cx
+jne len2_len4
+inc di
+len2_len4:
+cmp bx,dx
+jne finish_detecting
+inc di
+finish_detecting:
+mov ax,di
+call detect_shape
+ret
+
+
+
+
+
+
 main:
 
 ;[bp-4] point1 : [bp-4][0]=x1,[bp-4][1]=y1 
@@ -301,6 +407,15 @@ mov [bp-32],ax    ;store result in length4
 
 
 
+; compare lengths to detect_shape
+mov ax,[bp-20]
+mov bx,[bp-24]
+mov cx,[bp-28]
+mov dx,[bp-32]
+call compare_4lengths
+
+;shape detect useing compare result
+call detect_shape
 
 call exit
 
